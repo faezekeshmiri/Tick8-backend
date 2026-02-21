@@ -37,7 +37,7 @@ class Category(Base):
     name: Mapped[str] = mapped_column(String(120), nullable=False)
     description: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     status: Mapped[CategoryStatus] = mapped_column(
-        SAEnum(CategoryStatus, name="category_status_enum"),
+        SAEnum(CategoryStatus, name="category_status_enum", values_callable=lambda obj: [e.value for e in obj]),
         nullable=False,
         default=CategoryStatus.ACTIVE,
         server_default=CategoryStatus.ACTIVE.value,
