@@ -5,6 +5,13 @@ from pydantic import BaseModel
 from app.models.user import UserRole
 
 
+class AdminStats(BaseModel):
+    total_users: int
+    active_users: int
+    suspended_users: int
+    admin_count: int
+
+
 class AdminUserView(BaseModel):
     id: int
     display_name: str
