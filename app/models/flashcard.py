@@ -83,6 +83,11 @@ class Flashcard(Base):
     sub_category: Mapped["SubCategory"] = relationship(back_populates="flashcards")
     # owner relationship is unidirectional (no back_populates on User)
     owner: Mapped["User"] = relationship(foreign_keys=[owner_id])
+    user_progress: Mapped[list["UserCardProgress"]] = relationship(
+        back_populates="flashcard",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
 
     @validates("front_text", "back_text")
     def validate_text_not_only_whitespace(self, key: str, value: str | None) -> str | None:

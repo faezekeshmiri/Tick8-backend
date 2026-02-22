@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.models.flashcard import ContentType, Flashcard
 from app.models.sub_category import SubCategory
+from app.models.user_card_progress import UserCardProgress
 from app.schemas.flashcard import (
     FlashcardCreate,
     FlashcardListResponse,
@@ -199,7 +200,16 @@ def update_flashcard(
 def delete_flashcard(db: Session, card_id: int, owner_id: int) -> None:
     card = db.get(Flashcard, card_id)
     _assert_owned(card, owner_id)
-    card.deleted_at = datetime.now(timezone.utc)
+    now = datetime.now(timezone.utc)
+    card.deleted_at = now
+    # Soft-delete all user progress for this card (Story 3)
+    for prog in db.scalars(
+        select(UserCardProgress).where(
+            UserCardProgress.flashcard_id == card_id,
+            UserCardProgress.deleted_at.is_(None),
+        )
+    ).all():
+        prog.deleted_at = now
     db.commit()
 
 

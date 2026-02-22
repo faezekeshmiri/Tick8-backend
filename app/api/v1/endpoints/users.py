@@ -4,8 +4,9 @@ from sqlalchemy.orm import Session
 from app.api.v1.deps import get_current_user
 from app.db.session import get_db
 from app.models.user import User
+from app.schemas.study import UserStudySettingsResponse, UserStudySettingsUpdate
 from app.schemas.user import ChangeEmailRequest, ChangePasswordRequest, UpdateProfileRequest, UserPublic
-from app.services import auth_service, user_service
+from app.services import auth_service, user_service, study_service
 
 router = APIRouter()
 
@@ -55,3 +56,33 @@ def change_password(
 ) -> dict:
     user_service.change_password(db, current_user, data)
     return {"message": "Password changed successfully."}
+
+
+@router.get("/me/study-settings", response_model=UserStudySettingsResponse)
+def get_study_settings(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> UserStudySettingsResponse:
+    """Get current user's study settings (e.g. session size limit)."""
+    return UserStudySettingsResponse(
+        **study_service.get_user_study_settings(db, current_user.id)
+    )
+
+
+@router.patch("/me/study-settings", response_model=UserStudySettingsResponse)
+def update_study_settings(
+    data: UserStudySettingsUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> UserStudySettingsResponse:
+    """Update study settings (daily new cards, session cap, phase regression)."""
+    return UserStudySettingsResponse(
+        **study_service.update_user_study_settings(
+            db,
+            current_user.id,
+            daily_new_card_limit=data.daily_new_card_limit,
+            session_cap=data.session_cap,
+            phase_regression_enabled=data.phase_regression_enabled,
+            skip_off_schedule_progress_prompt=data.skip_off_schedule_progress_prompt,
+        )
+    )

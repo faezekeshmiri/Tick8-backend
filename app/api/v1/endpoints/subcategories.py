@@ -4,13 +4,17 @@ from sqlalchemy.orm import Session
 from app.api.v1.deps import get_current_user
 from app.db.session import get_db
 from app.models.user import User
+from app.schemas.study import (
+    SubcategoryCardProgressResponse,
+    SubcategoryProgressResponse,
+)
 from app.schemas.subcategory import (
     SubCategoryCreate,
     SubCategoryListResponse,
     SubCategoryResponse,
     SubCategoryUpdate,
 )
-from app.services import subcategory_service
+from app.services import subcategory_service, study_service
 
 router = APIRouter()
 
@@ -77,3 +81,33 @@ def delete_subcategory(
     current_user: User = Depends(get_current_user),
 ) -> None:
     subcategory_service.delete_subcategory(db, sub_id, current_user.id)
+
+
+@router.get("/subcategories/{sub_id}/progress", response_model=SubcategoryProgressResponse)
+def get_subcategory_progress(
+    sub_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> SubcategoryProgressResponse:
+    """Progress overview for this subcategory: phase counts, progress %, mastered."""
+    data = study_service.get_subcategory_progress(db, sub_id, current_user.id)
+    return SubcategoryProgressResponse(**data)
+
+
+@router.get(
+    "/subcategories/{sub_id}/card-progress",
+    response_model=SubcategoryCardProgressResponse,
+)
+def get_subcategory_card_progress(
+    sub_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> SubcategoryCardProgressResponse:
+    """Per-card tick results (marks) for the 16-dot progress strip."""
+    items = study_service.get_subcategory_card_progress(db, sub_id, current_user.id)
+    return SubcategoryCardProgressResponse(
+        card_progress=[
+            {"flashcard_id": x["flashcard_id"], "progress_id": x["progress_id"], "marks": x["marks"]}
+            for x in items
+        ]
+    )

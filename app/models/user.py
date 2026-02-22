@@ -13,6 +13,7 @@ from app.db.base_class import Base
 if TYPE_CHECKING:
     from app.models.category import Category
     from app.models.token import EmailVerificationToken, PasswordResetToken, RefreshToken
+    from app.models.user_study_settings import UserStudySettings
 
 
 class UserRole(str, Enum):
@@ -97,6 +98,12 @@ class User(Base):
     )
     password_reset_tokens: Mapped[list["PasswordResetToken"]] = relationship(
         back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+    study_settings: Mapped["UserStudySettings | None"] = relationship(
+        back_populates="user",
+        uselist=False,
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
