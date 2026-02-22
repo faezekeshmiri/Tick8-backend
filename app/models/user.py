@@ -81,7 +81,7 @@ class User(Base):
     )
 
     categories: Mapped[list["Category"]] = relationship(
-        back_populates="user",
+        back_populates="owner",
         cascade="all, delete-orphan",
         passive_deletes=True,
     )

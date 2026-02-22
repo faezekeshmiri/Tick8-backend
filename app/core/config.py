@@ -34,6 +34,14 @@ class Settings(BaseSettings):
     MAX_LOGIN_ATTEMPTS: int = 5
     LOCKOUT_DURATION_MINUTES: int = 15
 
+    # Content limits (Story 2)
+    MAX_FLASHCARDS_PER_SUBCATEGORY: int = 20
+    TRASH_RETENTION_DAYS: int = 30
+
+    # File uploads (Story 2)
+    UPLOAD_DIR: str = "uploads"
+    MAX_IMAGE_SIZE_MB: int = 5
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
