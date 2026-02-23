@@ -100,7 +100,6 @@ def ensure_subcategory_initialized(db: Session, sub_category_id: int, user_id: i
             select(UserCardProgress).where(
                 UserCardProgress.user_id == user_id,
                 UserCardProgress.flashcard_id == card.id,
-                UserCardProgress.deleted_at.is_(None),
             )
         )
         if existing is None:
@@ -112,6 +111,9 @@ def ensure_subcategory_initialized(db: Session, sub_category_id: int, user_id: i
                     queued_at=now,
                 )
             )
+        elif existing.deleted_at is not None:
+            # Restored card: progress was soft-deleted; restore it to avoid duplicate key
+            existing.deleted_at = None
     db.commit()
 
 

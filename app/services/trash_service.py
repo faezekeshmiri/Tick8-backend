@@ -12,6 +12,7 @@ from app.core.config import settings
 from app.models.category import Category
 from app.models.flashcard import Flashcard
 from app.models.sub_category import SubCategory
+from app.models.user_card_progress import UserCardProgress
 from app.schemas.trash import (
     TrashCategoryItem,
     TrashFlashcardItem,
@@ -175,6 +176,14 @@ def restore_flashcard(db: Session, card_id: int, owner_id: int) -> None:
         )
 
     card.deleted_at = None
+    # Restore user progress for this card so ensure_subcategory_initialized doesn't try to re-insert (unique violation)
+    for prog in db.scalars(
+        select(UserCardProgress).where(
+            UserCardProgress.flashcard_id == card_id,
+            UserCardProgress.deleted_at.isnot(None),
+        )
+    ).all():
+        prog.deleted_at = None
     db.commit()
 
 

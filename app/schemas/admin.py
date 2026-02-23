@@ -30,3 +30,42 @@ class AdminUserListResponse(BaseModel):
     total: int
     page: int
     page_size: int
+
+
+# --- User detail (for admin view) ---
+
+
+class AdminUserDetailStats(BaseModel):
+    categories_count: int
+    subcategories_count: int
+    flashcards_count: int
+    cards_with_progress_count: int
+    total_reviews_count: int
+    progress_pending: int
+    progress_phase1: int
+    progress_phase2: int
+    progress_graduated: int
+    progress_long_term_mastered: int
+
+
+class AdminSubCategorySummary(BaseModel):
+    id: int
+    title: str
+    flashcards_count: int
+    created_at: datetime
+
+
+class AdminCategorySummary(BaseModel):
+    id: int
+    title: str
+    description: str | None
+    subcategories_count: int
+    flashcards_count: int
+    subcategories: list[AdminSubCategorySummary]
+    created_at: datetime
+
+
+class AdminUserDetail(BaseModel):
+    user: AdminUserView
+    stats: AdminUserDetailStats
+    categories: list[AdminCategorySummary]
