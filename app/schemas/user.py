@@ -16,6 +16,7 @@ class UserPublic(BaseModel):
     is_email_verified: bool
     avatar_url: str | None
     pending_email: str | None
+    preferred_language: str = "en"
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -24,6 +25,7 @@ class UserPublic(BaseModel):
 class UpdateProfileRequest(BaseModel):
     display_name: str | None = None
     avatar_url: str | None = None
+    preferred_language: str | None = None
 
     @field_validator("display_name")
     @classmethod
@@ -36,6 +38,16 @@ class UpdateProfileRequest(BaseModel):
         if len(stripped) > 100:
             raise ValueError("Display name must be 100 characters or fewer")
         return stripped
+
+    @field_validator("preferred_language")
+    @classmethod
+    def preferred_language_allowed(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        allowed = {"en", "fa"}
+        if v not in allowed:
+            raise ValueError("preferred_language must be one of: " + ", ".join(sorted(allowed)))
+        return v
 
 
 class ChangeEmailRequest(BaseModel):
