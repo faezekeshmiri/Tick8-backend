@@ -10,7 +10,8 @@ def update_profile(db: Session, user: User, data: UpdateProfileRequest) -> User:
     if data.display_name is not None:
         user.display_name = data.display_name
     if data.avatar_url is not None:
-        user.avatar_url = data.avatar_url
+        # Allow empty string to clear the avatar
+        user.avatar_url = (data.avatar_url.strip() or None) if data.avatar_url else None
     db.commit()
     db.refresh(user)
     return user
