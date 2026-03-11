@@ -61,6 +61,9 @@ class User(Base):
     )
     avatar_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
     pending_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    preferred_language: Mapped[str] = mapped_column(
+        String(10), nullable=False, default="en", server_default="en"
+    )
 
     failed_login_attempts: Mapped[int] = mapped_column(
         Integer, nullable=False, default=0, server_default="0"

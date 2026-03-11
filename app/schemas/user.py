@@ -16,14 +16,26 @@ class UserPublic(BaseModel):
     is_email_verified: bool
     avatar_url: str | None
     pending_email: str | None
+    preferred_language: str
     created_at: datetime
 
     model_config = {"from_attributes": True}
 
 
+SUPPORTED_LANGUAGES = {"en", "fa"}
+
+
 class UpdateProfileRequest(BaseModel):
     display_name: str | None = None
     avatar_url: str | None = None
+    preferred_language: str | None = None
+
+    @field_validator("preferred_language")
+    @classmethod
+    def validate_language(cls, v: str | None) -> str | None:
+        if v is not None and v not in SUPPORTED_LANGUAGES:
+            raise ValueError(f"Unsupported language: {v}")
+        return v
 
     @field_validator("display_name")
     @classmethod
