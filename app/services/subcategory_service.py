@@ -12,6 +12,8 @@ from sqlalchemy.orm import Session
 from app.models.category import Category
 from app.models.flashcard import Flashcard
 from app.models.sub_category import SubCategory
+
+DEFAULT_SUBCATEGORY_COLOR = "#38bdf8"
 from app.schemas.subcategory import (
     SubCategoryCreate,
     SubCategoryListResponse,
@@ -58,6 +60,7 @@ def _to_response(db: Session, sub: SubCategory) -> SubCategoryResponse:
         category_id=sub.category_id,
         title=sub.title,
         description=sub.description,
+        color=sub.color,
         flashcard_count=_flashcard_count(db, sub.id),
         created_at=sub.created_at,
         updated_at=sub.updated_at,
@@ -140,11 +143,13 @@ def create_subcategory(
             detail="A subcategory with this title already exists in this category.",
         )
 
+    accent = data.color if data.color else DEFAULT_SUBCATEGORY_COLOR
     sub = SubCategory(
         category_id=category_id,
         owner_id=owner_id,
         title=title,
         description=data.description,
+        color=accent,
     )
     db.add(sub)
     db.commit()
@@ -181,6 +186,9 @@ def update_subcategory(
 
     if "description" in data.model_fields_set:
         sub.description = data.description
+
+    if "color" in data.model_fields_set:
+        sub.color = data.color
 
     sub.updated_at = datetime.now(timezone.utc)
     db.commit()

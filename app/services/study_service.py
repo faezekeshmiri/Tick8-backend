@@ -15,6 +15,24 @@ from app.models.user import User
 from app.models.user_card_progress import UserCardProgress, ProgressStatus
 from app.models.user_study_settings import UserStudySettings
 from app.services import interval_provider
+
+# Matches frontend SUBCATEGORY_PALETTE (fallback when sub_categories.color is null)
+_SUBCATEGORY_PALETTE = (
+    "#38bdf8",
+    "#10b981",
+    "#f59e0b",
+    "#fb7185",
+    "#8b5cf6",
+    "#64748b",
+    "#f97316",
+    "#06b6d4",
+)
+
+
+def _resolved_subcategory_accent_color(sub: SubCategory | None, sub_category_id: int) -> str:
+    if sub is not None and sub.color:
+        return sub.color.lower()
+    return _SUBCATEGORY_PALETTE[sub_category_id % len(_SUBCATEGORY_PALETTE)]
 from app.services.srs_engine import (
     get_initial_srs_interval_and_ease,
     performance_score_from_tick_values,
@@ -337,9 +355,12 @@ def get_todays_queue_with_cards(db: Session, user_id: int) -> list[dict[str, Any
             "forgot" if r.result.value == "difficult" else r.result.value
             for r in results
         ][:16]
+        sub = db.get(SubCategory, card.sub_category_id)
+        subcategory_color = _resolved_subcategory_accent_color(sub, card.sub_category_id)
         out.append({
             "progress_id": progress_id,
             "flashcard_id": flashcard_id,
+            "subcategory_color": subcategory_color,
             "front": {
                 "type": card.front_type.value,
                 "text": card.front_text,
@@ -476,6 +497,8 @@ def get_study_card(
             "image_url": card.back_image_url,
         }
         hidden_side_label = "Back"
+    sub = db.get(SubCategory, card.sub_category_id)
+    subcategory_color = _resolved_subcategory_accent_color(sub, card.sub_category_id)
     return {
         "progress_id": p.id,
         "flashcard_id": p.flashcard_id,
@@ -487,6 +510,7 @@ def get_study_card(
         "content": content,
         "content_hidden": content_hidden,
         "hidden_side_label": hidden_side_label,
+        "subcategory_color": subcategory_color,
     }
 
 

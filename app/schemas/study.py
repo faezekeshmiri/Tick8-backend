@@ -111,3 +111,4 @@ class StudyCardResponse(BaseModel):
     content: StudyCardSideResponse
     content_hidden: StudyCardSideResponse
     hidden_side_label: str
+    subcategory_color: str

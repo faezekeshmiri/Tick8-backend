@@ -98,6 +98,7 @@ def get_study_card(
             content=StudyCardSideResponse(**data["content"]),
             content_hidden=StudyCardSideResponse(**data["content_hidden"]),
             hidden_side_label=data["hidden_side_label"],
+            subcategory_color=data["subcategory_color"],
         )
     except ValueError as e:
         raise HTTPException(

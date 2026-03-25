@@ -30,6 +30,8 @@ class SubCategory(Base):
     )
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Hex accent e.g. #38bdf8; null = legacy clients use id-based palette on the frontend
+    color: Mapped[str | None] = mapped_column(String(7), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
