@@ -79,6 +79,14 @@ class SubcategoryCardProgressResponse(BaseModel):
     card_progress: list[CardProgressItem]
 
 
+class PostponeRequest(BaseModel):
+    days: int = Field(..., ge=1, le=30)
+
+
+class PostponeResponse(BaseModel):
+    postponed_count: int
+
+
 class SessionSummaryResponse(BaseModel):
     cards_reviewed: int
     remembered: int

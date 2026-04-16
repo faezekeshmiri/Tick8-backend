@@ -8,6 +8,8 @@ from app.db.session import get_db
 from app.models.tick_result import TickResultKind
 from app.models.user import User
 from app.schemas.study import (
+    PostponeRequest,
+    PostponeResponse,
     QueueItem,
     RecordTickRequest,
     RecordTickResponse,
@@ -152,6 +154,23 @@ def set_progress_ticks(
         if "not found" in str(e).lower():
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.post("/postpone", response_model=PostponeResponse)
+def postpone_session(
+    body: PostponeRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> PostponeResponse:
+    """Postpone today's study session by N days. Shifts all due/overdue cards forward."""
+    try:
+        data = study_service.postpone_todays_session(db, current_user.id, body.days)
+        return PostponeResponse(**data)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
 
 
 @router.post("/subcategories/{sub_id}/initialize")

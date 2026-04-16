@@ -796,6 +796,40 @@ def _count_ticks_due_today_fixed(p: UserCardProgress, today: date) -> int:
     return 1
 
 
+def postpone_todays_session(db: Session, user_id: int, days: int) -> dict[str, Any]:
+    """Postpone all cards due today (or overdue) by `days` days.
+
+    Shifts next_review_date forward.  For Phase 1/2 cards also shifts
+    schedule_anchor_date so that subsequent intervals stay consistent.
+    """
+    if days < 1 or days > 30:
+        raise ValueError("days must be between 1 and 30")
+
+    today = _today_utc()
+    delta = timedelta(days=days)
+
+    due_cards = db.scalars(
+        select(UserCardProgress).where(
+            UserCardProgress.user_id == user_id,
+            UserCardProgress.deleted_at.is_(None),
+            UserCardProgress.next_review_date.isnot(None),
+            UserCardProgress.next_review_date <= today,
+            UserCardProgress.status != ProgressStatus.PENDING,
+        )
+    ).all()
+
+    count = 0
+    for p in due_cards:
+        p.next_review_date = p.next_review_date + delta
+        if p.status in (ProgressStatus.PHASE1, ProgressStatus.PHASE2):
+            if p.schedule_anchor_date is not None:
+                p.schedule_anchor_date = p.schedule_anchor_date + delta
+        count += 1
+
+    db.commit()
+    return {"postponed_count": count}
+
+
 def set_progress_ticks(
     db: Session,
     user_id: int,
